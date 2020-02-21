@@ -1,12 +1,18 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Xml.Serialization;
 
 namespace Task2
 {
-
+    [Serializable]
+    [XmlInclude(typeof(Circle))]
+    [XmlInclude(typeof(Rectangle))]
+    [XmlInclude(typeof(Triangle))]
     public abstract class Figure
     {
+        public Figure() { }
         public Figure(string sides) 
         {
             this.sides = new List<double>();
@@ -15,17 +21,17 @@ namespace Task2
                 this.sides.Add(Convert.ToDouble(side));
             }
         }
-        protected List<double> sides;
+        public List<double> sides;
         /// <summary>
         /// Должен считать площадь фигуры
         /// </summary>
         /// <returns> Возврящает площадь фигуры</returns>
-        protected abstract double Area();
+        public abstract double Area();
         /// <summary>
         /// Должен считать периметр фигуры
         /// </summary>
         /// <returns>Возврящает периетр фигуры</returns>
-        protected abstract double Perimeter();
+        public abstract double Perimeter();
         /// <summary>
         /// Вывод информации о фигуре
         /// </summary>
@@ -39,17 +45,17 @@ namespace Task2
 
        
     }
-
-
+    [Serializable]
     public class Triangle : Figure
     {
+        public Triangle() { }
         public Triangle(string sides):base(sides){}
 
         /// <summary>
         /// Считает площадь треугольника
         /// </summary>
         /// <returns> Возвращает площадь треугольника</returns>
-        protected override double Area()
+        public override double Area()
         {
             return Math.Sqrt(Perimeter() * (Perimeter() - sides[0]) * (Perimeter() - sides[1]) * (Perimeter() - sides[2]));
         }
@@ -57,20 +63,21 @@ namespace Task2
         /// Считает периметр треугольника
         /// </summary>
         /// <returns>Возвращает периметр треугольника</returns>
-        protected override double Perimeter()
+        public override double Perimeter()
         {
             return sides[0] + sides[1] + sides[2];
         }
     }
-
+    [Serializable]
     public class Circle : Figure
     {
+        public Circle() { }
         public Circle(string sides) : base(sides) { }
         /// <summary>
         /// Считает площадь круга
         /// </summary>
         /// <returns>Возвращает площадь круга</returns>
-        protected override double Area()
+        public override double Area()
         {
             return sides[0] * sides[0] * Math.PI;
         }
@@ -78,19 +85,23 @@ namespace Task2
         /// Считеат длину окружности
         /// </summary>
         /// <returns>Возврящает длину окружности</returns>
-        protected override double Perimeter()
+        public override double Perimeter()
         {
             return 2* sides[0] * Math.PI;
         }
     }
+    [Serializable]
+    [XmlRoot]
+    
     public class Rectangle : Figure
     {
+        public Rectangle(){ }
         public Rectangle(string sides) : base(sides) { }
         /// <summary>
         /// Считает площадь прямоугольника
         /// </summary>
         /// <returns>Возвращает площадб прямоугольника</returns>
-        protected override double Area()
+        public override double Area()
         {
             return sides[0] * sides[1] ;
         }
@@ -98,7 +109,7 @@ namespace Task2
         /// Считает периметр прямоугольника
         /// </summary>
         /// <returns>Возвращает периметр прямоугольника</returns>
-        protected override double Perimeter()
+        public override double Perimeter()
         {
             return (sides[0] + sides[1])*2;
         }
@@ -116,11 +127,37 @@ namespace Task2
     {
         static void Main(string[] args)
         {
+            //XmlSerializer formatterC = new XmlSerializer(typeof(Circle));
+            //XmlSerializer formatterR = new XmlSerializer(typeof(Rectangle));
+            //XmlSerializer formatterT = new XmlSerializer(typeof(Triangle));
+             XmlSerializer formatterT = new XmlSerializer(typeof(List<Figure>));
+            Trace.WriteLine("Чтение информации из файла в строку");
             string big_str=Read_from_file();
+            Trace.WriteLine("Разбиение строки на фигуры");
             List<Figure> figures = Create_figures_list(big_str);
-            foreach(Figure figure in figures)
+            using (FileStream fs = new FileStream("D:\\persons.xml", FileMode.OpenOrCreate))
             {
-                figure.Info();
+                formatterT.Serialize(fs, figures);
+                //foreach (Figure figure in figures)
+                //{
+                //    try
+                //    {
+                //        formatterC.Serialize(fs, figure);
+                //    }
+                //    catch { }
+                //    try
+                //    {
+                //        formatterR.Serialize(fs, figure);
+                //    }
+                //    catch { }
+                //    try
+                //    {
+                //        formatterT.Serialize(fs, figure);
+                //    }
+                //    catch { }
+                //    Trace.WriteLine("Вывод информации на экран");
+                //figure.Info();
+                //}
             }
         }
         /// <summary>
